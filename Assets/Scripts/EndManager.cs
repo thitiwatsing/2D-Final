@@ -1,18 +1,16 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro; // ใช้ TextMeshPro (ถ้าใช้ Text ธรรมดาให้เปลี่ยน TMP_Text เป็น Text)
+using TMPro;
 
-/// <summary>
-/// ติดกับ GameObject บน Canvas ใน Scene End
-/// </summary>
 public class EndManager : MonoBehaviour
 {
     [Header("Buttons")]
-    public Button retryButton;   // เล่นใหม่ -> Main
-    public Button menuButton;    // กลับ -> Menu
+    public Button retryButton;
+    public Button menuButton;
 
-    [Header("Optional - แสดงข้อความ")]
-    public TMP_Text messageText; // ถ้าไม่ใช้ TMP ให้ลบบรรทัดนี้และบรรทัด Start() ที่เกี่ยวข้อง
+    [Header("Result UI")]
+    public TMP_Text timeText;
+    public TMP_Text scoreText;
 
     void Start()
     {
@@ -22,18 +20,25 @@ public class EndManager : MonoBehaviour
         if (menuButton != null)
             menuButton.onClick.AddListener(OnMenuClicked);
 
-        // แสดงข้อความตาม HP ที่เหลือ (ถ้ามี Text)
-        if (messageText != null && GameManager.Instance != null)
+        if (ScoreManager.Instance != null)
         {
-            if (GameManager.Instance.currentHealth <= 0)
-                messageText.text = "Game Over!";
-            else
-                messageText.text = "You Win!";
+            ScoreManager.Instance.StopTimer();
+            int minutes = (int)(ScoreManager.Instance.playTime / 60);
+            int seconds = (int)(ScoreManager.Instance.playTime % 60);
+
+            if (timeText != null)
+                timeText.text = $"Time : {minutes:00}:{seconds:00}";
+
+            if (scoreText != null)
+                scoreText.text = $"Score : {ScoreManager.Instance.score}";
         }
     }
 
     public void OnRetryClicked()
     {
+        if (ScoreManager.Instance != null)
+            ScoreManager.Instance.ResetAll();
+
         if (GameManager.Instance != null)
             GameManager.Instance.RestartGame();
         else
@@ -42,6 +47,9 @@ public class EndManager : MonoBehaviour
 
     public void OnMenuClicked()
     {
+        if (ScoreManager.Instance != null)
+            ScoreManager.Instance.ResetAll();
+
         if (GameManager.Instance != null)
             GameManager.Instance.GoToMenu();
         else
